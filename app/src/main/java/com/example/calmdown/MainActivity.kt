@@ -11,11 +11,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.calmdown.databinding.MainLayoutBinding
 import com.example.calmdown.ui.theme.CalmDownTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val binding = MainLayoutBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
     }
 }
