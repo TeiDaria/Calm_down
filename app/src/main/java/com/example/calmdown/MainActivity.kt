@@ -46,17 +46,18 @@ class MainActivity : ComponentActivity() {
             skrape(HttpFetcher) {
                 request {
                     url = "https://unsplash.com/s/photos/cats?license=free&orientation=portrait"
-                    timeout = 10000
+                    timeout = 20000
                 }
                 extractIt<ArrayList<Photo?>> {
                     htmlDocument {
                         findAll("a.mG0SP") {
                             forEach { postHtmlElement ->
                                 val srcset = postHtmlElement.img { findFirst { attribute("srcset") } }
-
+                                Log.d("srcset", srcset)
                                 val photo =
                                     srcset.split(",").firstOrNull()?.trim()?.split(" ")?.first()
                                         ?.let { it1 -> Photo(it1) }
+                                Log.d("photo", photo.toString())
                                 it.add(photo)
 
                             }
