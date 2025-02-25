@@ -8,6 +8,11 @@ android {
     namespace = "com.example.calmdown"
     compileSdk = 35
 
+    packaging {
+        resources.merges.add("META-INF/DEPENDENCIES")
+        resources.merges.add("mozilla/public-suffix-list.txt")
+    }
+
     defaultConfig {
         applicationId = "com.example.calmdown"
         minSdk = 26
