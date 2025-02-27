@@ -46,7 +46,7 @@ class MainActivity : ComponentActivity() {
             skrape(HttpFetcher) {
                 request {
                     url = "https://unsplash.com/s/photos/cats?license=free&orientation=portrait"
-                    timeout = 20000
+                    timeout = 60000
                 }
                 extractIt<ArrayList<Photo?>> {
                     htmlDocument {
