@@ -47,13 +47,17 @@ class MainActivity : ComponentActivity() {
                 request {
                     url = "https://unsplash.com/s/photos/cats?license=free&orientation=portrait"
                     timeout = 60000
+                    headers = mapOf( "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+                        "Accept" to "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+                        "Accept-Language" to "en-US,en;q=0.5")
                 }
                 extractIt<ArrayList<Photo?>> {
                     htmlDocument {
-                        findAll("a.mG0SP") {
-                            forEach { postHtmlElement ->
-                                val srcset = postHtmlElement.img { findFirst { attribute("srcset") } }
+                        findFirst("a.mG0SP") {
+                            findFirst("img.tzC2N.fbGdz.cnmNG") {
+                                val srcset = attribute("srcset")
                                 Log.d("srcset", srcset)
+
                                 val photo =
                                     srcset.split(",").firstOrNull()?.trim()?.split(" ")?.first()
                                         ?.let { it1 -> Photo(it1) }
