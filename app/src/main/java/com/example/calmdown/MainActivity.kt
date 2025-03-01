@@ -45,11 +45,11 @@ class MainActivity : ComponentActivity() {
         return withContext(Dispatchers.IO) {
             skrape(HttpFetcher) {
                 request {
-                    url = "https://unsplash.com/s/photos/cats?license=free&orientation=portrait"
-                    timeout = 60000
                     headers = mapOf( "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
                         "Accept" to "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
                         "Accept-Language" to "en-US,en;q=0.5")
+                    url = "https://unsplash.com/s/photos/cats?license=free&orientation=portrait"
+                    timeout = 60000
                 }
                 extractIt<ArrayList<Photo?>> {
                     htmlDocument {
