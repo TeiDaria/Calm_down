@@ -17,6 +17,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class MainActivity : ComponentActivity() {
+    private var currentPage = 1
+    private val perPage = 20
+    private var isLoading = false
+    private var isLastPage = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -54,15 +59,17 @@ class MainActivity : ComponentActivity() {
                 extractIt<ArrayList<Photo?>> {
                     htmlDocument {
                         findFirst("a.mG0SP") {
-                            findFirst("img.tzC2N.fbGdz.cnmNG") {
-                                val srcset = attribute("srcset")
-                                Log.d("srcset", srcset)
+                            findAll("img.tzC2N.fbGdz.cnmNG") {
+                                forEach { productHtmlElement ->
+                                    val srcset = productHtmlElement.attribute("srcset")
+                                    Log.d("srcset", srcset)
 
-                                val photo =
-                                    srcset.split(",").firstOrNull()?.trim()?.split(" ")?.first()
-                                        ?.let { it1 -> Photo(it1) }
-                                Log.d("photo", photo.toString())
-                                it.add(photo)
+                                    val photo =
+                                        srcset.split(",").firstOrNull()?.trim()?.split(" ")?.first()
+                                            ?.let { it1 -> Photo(it1) }
+                                    Log.d("photo", photo.toString())
+                                    it.add(photo)
+                                }
 
                             }
                         }
