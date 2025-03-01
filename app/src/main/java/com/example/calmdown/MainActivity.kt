@@ -45,21 +45,21 @@ class MainActivity : ComponentActivity() {
         return withContext(Dispatchers.IO) {
             skrape(HttpFetcher) {
                 request {
-                    url = "https://unsplash.com/s/photos/cats?license=free&orientation=portrait"
+                    url = "https://yandex.ru/images/search?text=%D0%BA%D0%BE%D1%82%D0%B8%D0%BA%D0%B8&lr=213&redircnt=1740690742.1"
                     timeout = 60000
-                }
-                extractIt<ArrayList<Photo?>> {
-                    htmlDocument {
-                        findAll("a.mG0SP") {
-                            forEach { postHtmlElement ->
-                                val srcset = postHtmlElement.img { findFirst { attribute("srcset") } }
-                                Log.d("srcset", srcset)
-                                val photo =
-                                    srcset.split(",").firstOrNull()?.trim()?.split(" ")?.first()
-                                        ?.let { it1 -> Photo(it1) }
-                                Log.d("photo", photo.toString())
-                                it.add(photo)
+                    headers = mapOf( "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36" )
 
+                }
+                extractIt<ArrayList<Photo>> {
+                    htmlDocument {
+                        "a.Link.ImagesContentImage-Cover" {
+                            findAll {
+                                forEach { postHtmlElement ->
+                                    val photo = Photo(
+                                        image = postHtmlElement.img { findFirst { attribute("src") } }
+                                    )
+                                    it.add(photo)
+                                }
                             }
                         }
 
@@ -67,6 +67,5 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-
     }
 }
