@@ -6,11 +6,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.calmdown.databinding.ItemPhotoBinding
 
-class PhotosAdapter(private val photos: List<Photo?>) : RecyclerView.Adapter<PhotosAdapter.PhotoViewHolder>() {
+class PhotosAdapter(private var photos: List<Photo?>) : RecyclerView.Adapter<PhotosAdapter.PhotoViewHolder>() {
     inner class PhotoViewHolder(private val binding: ItemPhotoBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(photo: Photo) {
             Glide.with(binding.root.context)
-                .load(photo.image)
+                .load(photo.urls.small)
                 .error(R.drawable.error_img)
                 .into(binding.imageView)
         }
@@ -27,6 +27,11 @@ class PhotosAdapter(private val photos: List<Photo?>) : RecyclerView.Adapter<Pho
 
     override fun getItemCount(): Int {
         return photos.size
+    }
+
+    fun updatePhotos(newPhotos: List<Photo>) {
+        photos = newPhotos
+        notifyDataSetChanged() // Можно использовать notifyItemRangeInserted, если хотите более оптимизированный подход
     }
 
 }

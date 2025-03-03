@@ -20,7 +20,7 @@ import kotlinx.coroutines.withContext
 class MainActivity : ComponentActivity() {
 
     private var currentPage = 1
-    private val perPage = 2
+    private val perPage = 5
     private var isLoading = false
     private var isLastPage = false
 
@@ -71,7 +71,7 @@ class MainActivity : ComponentActivity() {
                 if (newPhotos.isNotEmpty()) {
                     val startPosition = photos.size
                     photos.addAll(newPhotos.filterNotNull()) // Добавляем новые фото в список
-                    adapter.notifyItemRangeInserted(startPosition, newPhotos.size) // Обновляем адаптер
+                    adapter.updatePhotos(photos) // Обновляем адаптер
                     currentPage++ // Увеличиваем номер страницы
                 } else {
                     isLastPage = true // Если новых фото нет, останавливаем загрузку
@@ -85,33 +85,13 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private suspend fun fetchPhotos(page: Int, perPage: Int): List<Photo?> {
+    private suspend fun fetchPhotos(page: Int, perPage: Int): List<Photo> {
         return withContext(Dispatchers.IO) {
-            skrape(HttpFetcher) {
-                request {
-                    headers = mapOf(
-                        "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-                        "Accept" to "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-                        "Accept-Language" to "en-US,en;q=0.5"
-                    )
-                    url = "https://unsplash.com/s/photos/cats?license=free&orientation=portrait"
-                    timeout = 120000
-                }
-                extractIt<ArrayList<Photo?>> {
-                    htmlDocument {
-                        findAll("img.tzC2N.fbGdz.cnmNG") {
-                            forEach { productHtmlElement ->
-                                val srcset = productHtmlElement.attribute("srcset")
-                                Log.d("srcset", srcset)
-
-                                val photo = srcset?.split(",")?.firstOrNull()?.trim()?.split(" ")?.first()
-                                    ?.let { it1 -> Photo(it1) }
-                                Log.d("photo", photo.toString())
-                                it.add(photo)
-                            }
-                        }
-                    }
-                }
+            try {
+                RetrofitInstance.api.getPhotos(page, perPage, "yy9LcujASiUad_qKT5tiK1GHQ96eGxWp3-LeEcxc7PA")
+            } catch (e: Exception) {
+                Log.e("MainActivity", "Error fetching photos: ${e.message}", e)
+                emptyList() // Возвращаем пустой список в случае ошибки
             }
         }
     }

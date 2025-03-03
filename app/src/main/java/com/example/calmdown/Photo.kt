@@ -1,3 +1,6 @@
 package com.example.calmdown
 
-data class Photo(var image: String = "")
+data class Photo(
+    val id: String,
+    val urls: Urls
+)
