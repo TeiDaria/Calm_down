@@ -30,8 +30,9 @@ class PhotosAdapter(private var photos: List<Photo?>) : RecyclerView.Adapter<Pho
     }
 
     fun updatePhotos(newPhotos: List<Photo>) {
+        val startPosition = photos.size
         photos = newPhotos
-        notifyDataSetChanged() // Можно использовать notifyItemRangeInserted, если хотите более оптимизированный подход
+        notifyItemRangeInserted(startPosition, newPhotos.size)
     }
 
 }

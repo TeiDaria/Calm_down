@@ -8,6 +8,6 @@ interface UnsplashApi {
     suspend fun getPhotos(
         @Query("page") page: Int,
         @Query("per_page") perPage: Int,
-        @Query("client_id") clientId: String // Ваш Access Key
+        @Query("client_id") clientId: String
     ): List<Photo>
 }
