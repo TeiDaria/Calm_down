@@ -2,6 +2,7 @@ package com.example.calmdown
 
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
@@ -20,9 +21,10 @@ import kotlinx.coroutines.withContext
 class MainActivity : ComponentActivity() {
 
     private var currentPage = 1
-    private val perPage = 5
+    private val perPage = 20
     private var isLoading = false
     private var isLastPage = false
+    private var lastQuery: String = ""
 
     private lateinit var adapter: PhotosAdapter
     private val photos = mutableListOf<Photo>()
@@ -36,6 +38,12 @@ class MainActivity : ComponentActivity() {
         adapter = PhotosAdapter(photos)
         binding.recyclerView.layoutManager = GridLayoutManager(this@MainActivity, 2)
         binding.recyclerView.adapter = adapter
+
+        // Обработка нажатия кнопки "Найти"
+        binding.button.setOnClickListener {
+            resetPagination() // Сбрасываем пагинацию и очищаем список
+            loadMorePhotos(binding) // Загружаем данные по новому запросу
+        }
 
         binding.recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
@@ -67,7 +75,20 @@ class MainActivity : ComponentActivity() {
         isLoading = true
         lifecycleScope.launch {
             try {
-                val newPhotos = fetchPhotos(currentPage, perPage)
+                val user_query: String = binding.editTextText.text.toString()
+
+                if (user_query.isEmpty()) {
+                    Toast.makeText(this@MainActivity, "Введите запрос", Toast.LENGTH_SHORT).show()
+                    return@launch
+                }
+
+                // Если запрос изменился, сбрасываем пагинацию
+                if (user_query != lastQuery) {
+                    resetPagination()
+                    lastQuery = user_query
+                }
+
+                val newPhotos = fetchPhotos(user_query, currentPage, perPage)
                 if (newPhotos.isNotEmpty()) {
                     val startPosition = photos.size
                     photos.addAll(newPhotos.filterNotNull()) // Добавляем новые фото в список
@@ -85,10 +106,21 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private suspend fun fetchPhotos(page: Int, perPage: Int): List<Photo> {
+    private fun resetPagination() {
+        currentPage = 1 // Сбрасываем пагинацию
+        isLastPage = false // Сбрасываем флаг последней страницы
+        photos.clear() // Очищаем список фотографий
+        adapter.notifyDataSetChanged() // Уведомляем адаптер об очистке списка
+    }
+
+    private suspend fun fetchPhotos(query: String, page: Int, perPage: Int): List<Photo> {
         return withContext(Dispatchers.IO) {
             try {
-                RetrofitInstance.api.getPhotos(page, perPage, "yy9LcujASiUad_qKT5tiK1GHQ96eGxWp3-LeEcxc7PA")
+                RetrofitInstance.api.searchPhotos(
+                    query = query,
+                    page = page,
+                    perPage = perPage,
+                    "yy9LcujASiUad_qKT5tiK1GHQ96eGxWp3-LeEcxc7PA").results
             } catch (e: Exception) {
                 Log.e("MainActivity", "Error fetching photos: ${e.message}", e)
                 emptyList() // Возвращаем пустой список в случае ошибки
