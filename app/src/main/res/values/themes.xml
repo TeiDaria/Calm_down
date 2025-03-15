@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.CalmDown" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.CalmDown" parent="Theme.MaterialComponents.DayNight.NoActionBar" />
+
+    <item name="colorPrimary" type="color">#485285</item>
+    <item name="colorPrimaryVariant" type="color">#5163BC</item>
+    <item name="colorOnPrimary" type="color">@color/white</item>
+    <item name="colorSecondary" type="color">#487378</item>
+    <item name="colorSecondaryVariant" type="color">#1B4143</item>
+    <item name="colorOnSecondary" type="color">@color/black</item>
 </resources>

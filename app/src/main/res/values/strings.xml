@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Calm down</string>
+    <string name="question">Какое фото вызывает у вас наибольшее чувство спокойствия и умиротворения?</string>
 </resources>
