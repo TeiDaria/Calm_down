@@ -7,6 +7,7 @@ import androidx.activity.ComponentActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.example.calmdown.databinding.MainLayoutBinding
 import it.skrape.core.htmlDocument
 import it.skrape.fetcher.HttpFetcher
@@ -36,7 +37,7 @@ class MainActivity : ComponentActivity() {
         setContentView(binding.root)
 
         adapter = PhotosAdapter(photos)
-        binding.recyclerView.layoutManager = GridLayoutManager(this@MainActivity, 2)
+        binding.recyclerView.layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
         binding.recyclerView.adapter = adapter
 
         // Обработка нажатия кнопки "Найти"
@@ -49,10 +50,11 @@ class MainActivity : ComponentActivity() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
 
-                val layoutManager = recyclerView.layoutManager as GridLayoutManager
+                val layoutManager = recyclerView.layoutManager as StaggeredGridLayoutManager
                 val visibleItemCount = layoutManager.childCount
                 val totalItemCount = layoutManager.itemCount
-                val firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
+                val firstVisibleItemPositions = layoutManager.findFirstVisibleItemPositions(null)
+                val firstVisibleItemPosition = firstVisibleItemPositions[0]
 
                 // Если пользователь доскроллил до конца и загрузка не идет
                 if (!isLoading && !isLastPage) {
