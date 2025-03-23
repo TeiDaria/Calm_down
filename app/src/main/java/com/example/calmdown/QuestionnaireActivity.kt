@@ -19,15 +19,18 @@ class QuestionnaireActivity : AppCompatActivity() {
         ),
         Question(
             text = "Какое фото вызывает у вас наибольшее чувство спокойствия и умиротворения?",
-            imageResIds = listOf(R.drawable.tiger, R.drawable.flowers_in_snow, R.drawable.silly_cat)
+            imageResIds = listOf(R.drawable.tiger2, R.drawable.flowers_in_snow, R.drawable.silly_cat2)
         ),
         Question(
             text = "Какое фото вызывает у вас наибольшее чувство спокойствия и умиротворения?",
-            imageResIds = listOf(R.drawable.dog_in_flowers, R.drawable.clouds, R.drawable.mountains_and_water)
+            imageResIds = listOf(R.drawable.dog_in_flowers2, R.drawable.clouds, R.drawable.mountains_and_water2)
         )
     )
 
     private var currentQuestionIndex = 0
+    private var selectedImageIndex = -1 // Индекс выбранной картинки (-1 означает, что ничего не выбрано)
+
+    private val selectedImageIndices = MutableList(questions.size) { -1 } // Изначально ни одна картинка не выбрана
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,23 +38,35 @@ class QuestionnaireActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         showQuestion(currentQuestionIndex)
+
+        // Обработчики кликов по картинкам
+        binding.image1.setOnClickListener { onImageSelected(0) }
+        binding.image2.setOnClickListener { onImageSelected(1) }
+        binding.image3.setOnClickListener { onImageSelected(2) }
+
+        // Кнопка "Назад"
         binding.backButton.setOnClickListener {
             if (currentQuestionIndex > 0) {
                 currentQuestionIndex--
                 showQuestion(currentQuestionIndex)
+                updateNavigationButtons()
             }
         }
 
+        // Кнопка "Далее"
         binding.nextButton.setOnClickListener {
             if (currentQuestionIndex < questions.size - 1) {
                 currentQuestionIndex++
                 showQuestion(currentQuestionIndex)
-            } else {
-                // Завершение анкеты
-                val intent = Intent(this, MainActivity::class.java)
-                startActivity(intent)
-                finish()
+                updateNavigationButtons()
             }
+        }
+
+        // Кнопка "Завершить"
+        binding.finishButton.setOnClickListener {
+            val intent = Intent(this, MainActivity::class.java)
+            startActivity(intent)
+            finish()
         }
     }
     private fun showQuestion(index: Int) {
@@ -65,11 +80,59 @@ class QuestionnaireActivity : AppCompatActivity() {
         binding.image2.setImageResource(question.imageResIds[1])
         binding.image3.setImageResource(question.imageResIds[2])
 
-        // Управление видимостью кнопок
-        binding.backButton.visibility = if (index > 0) View.VISIBLE else View.GONE
-        binding.nextButton.setImageResource(
-            if (index == questions.size - 1) R.drawable.baseline_check_24 else R.drawable.baseline_arrow_forward_24
-        )
+        // Сброс выделения картинок
+        resetImageBorders()
+
+        // Восстановление выбранной картинки для текущего вопроса
+        val selectedIndex = selectedImageIndices[index]
+        if (selectedIndex != -1) {
+            when (selectedIndex) {
+                0 -> binding.border1.setBackgroundResource(R.drawable.border) // Рамка для image1
+                1 -> binding.border2.setBackgroundResource(R.drawable.border) // Рамка для image2
+                2 -> binding.border3.setBackgroundResource(R.drawable.border) // Рамка для image3
+            }
+        }
+
+        // Обновление кнопок навигации
+        updateNavigationButtons()
     }
 
+    private fun onImageSelected(index: Int) {
+        // Сохраняем выбранную картинку для текущего вопроса
+        selectedImageIndices[currentQuestionIndex] = index
+
+        // Сброс выделения всех картинок
+        resetImageBorders()
+
+        // Выделение выбранной картинки
+        when (index) {
+            0 -> binding.border1.setBackgroundResource(R.drawable.border) // Рамка для image1
+            1 -> binding.border2.setBackgroundResource(R.drawable.border) // Рамка для image2
+            2 -> binding.border3.setBackgroundResource(R.drawable.border) // Рамка для image3
+        }
+
+        // Сохранение выбранной картинки
+        selectedImageIndex = index
+
+        if (currentQuestionIndex < questions.size - 1) {
+            currentQuestionIndex++
+            showQuestion(currentQuestionIndex)
+        } else {
+            // Если это последний вопрос, показываем кнопку "Завершить"
+            binding.finishButton.visibility = View.VISIBLE
+        }
+    }
+
+    private fun resetImageBorders() {
+        // Сброс рамок у всех картинок
+        binding.border1.setBackgroundResource(R.drawable.border_transparent)
+        binding.border2.setBackgroundResource(R.drawable.border_transparent)
+        binding.border3.setBackgroundResource(R.drawable.border_transparent)
+    }
+
+    private fun updateNavigationButtons() {
+        binding.backButton.visibility = if (currentQuestionIndex > 0) View.VISIBLE else View.GONE
+        binding.nextButton.visibility = if (currentQuestionIndex < questions.size - 1 && selectedImageIndices[currentQuestionIndex] != -1) View.VISIBLE else View.GONE
+        binding.finishButton.visibility = if (currentQuestionIndex == questions.size - 1 && selectedImageIndices[currentQuestionIndex] != -1) View.VISIBLE else View.GONE
+    }
 }
