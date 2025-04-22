@@ -26,16 +26,10 @@ class MainActivity : ComponentActivity() {
     private val perPage = 20
     private var isLoading = false
     private var isLastPage = false
-    //private var currentStressLevel: Int = 3 // Средний уровень по умолчанию
 
     private lateinit var binding: MainLayoutBinding
     private lateinit var adapter: PhotosAdapter
     private val photos = mutableListOf<Photo>()
-
-    // Хранение голосов по категориям стресса
-    private val categoryVotes = mutableMapOf<StressTheme, Int>().apply {
-        StressTheme.values().forEach { put(it, 0) } // Инициализируем все категории с 0 голосами
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -95,14 +89,10 @@ class MainActivity : ComponentActivity() {
         isLoading = true
         lifecycleScope.launch {
             try {
-//                // Получаем отсортированные темы на основе голосов и выбираем первую (наиболее популярную)
-//                val sortedThemes = StressTheme.getSortedThemes(categoryVotes)
-//                val theme = sortedThemes.firstOrNull() ?: StressTheme.CATS // Значение по умолчанию
-
                 val newPhotos = fetchPhotos(theme.query, currentPage, perPage)
 
                 if (newPhotos.isNotEmpty()) {
-                    photos.addAll(newPhotos.filterNotNull())
+                    photos.addAll(newPhotos)
                     adapter.updatePhotos(photos)
                     currentPage++
                 } else {

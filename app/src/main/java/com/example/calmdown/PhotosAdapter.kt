@@ -8,6 +8,7 @@ import com.example.calmdown.databinding.ItemPhotoBinding
 
 class PhotosAdapter(private var photos: List<Photo?>) : RecyclerView.Adapter<PhotosAdapter.PhotoViewHolder>() {
     inner class PhotoViewHolder(private val binding: ItemPhotoBinding) : RecyclerView.ViewHolder(binding.root) {
+
         fun bind(photo: Photo) {
             Glide.with(binding.root.context)
                 .load(photo.urls.small)
@@ -32,7 +33,8 @@ class PhotosAdapter(private var photos: List<Photo?>) : RecyclerView.Adapter<Pho
     fun updatePhotos(newPhotos: List<Photo>) {
         val startPosition = photos.size
         photos = newPhotos
-        notifyItemRangeInserted(startPosition, newPhotos.size)
+        //notifyItemRangeInserted(startPosition, newPhotos.size)
+        notifyDataSetChanged()
     }
 
 }

@@ -3,10 +3,10 @@ package com.example.calmdown
 import java.io.Serializable
 
 enum class StressTheme(val query: String) : Serializable {
-    ABSTRACT("abstract"),
+    ABSTRACT("calming abstract"),
     SKY("sky"),
-    NATURE("nature"),
-    DOGS("dogs"),
+    NATURE("beautiful nature"),
+    DOGS("dog"),
     CATS("cats");
 
     companion object {
