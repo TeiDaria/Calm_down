@@ -2,6 +2,7 @@ package com.example.calmdown
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -15,15 +16,23 @@ class QuestionnaireActivity : AppCompatActivity() {
     val questions = listOf(
         Question(
             text = "Какое фото вызывает у вас наибольшее чувство спокойствия и умиротворения?",
-            imageResIds = listOf(R.drawable.cat_with_flowers, R.drawable.flowers_and_mountains, R.drawable.sky_and_water)
+            imageResIds = listOf(R.drawable.cat_with_flowers, R.drawable.abstract1, R.drawable.sky_and_water)
         ),
         Question(
             text = "Какое фото вызывает у вас наибольшее чувство спокойствия и умиротворения?",
-            imageResIds = listOf(R.drawable.tiger2, R.drawable.flowers_in_snow, R.drawable.silly_cat2)
+            imageResIds = listOf(R.drawable.dog_in_flowers2, R.drawable.flowers_and_mountains, R.drawable.silly_cat2)
         ),
         Question(
             text = "Какое фото вызывает у вас наибольшее чувство спокойствия и умиротворения?",
-            imageResIds = listOf(R.drawable.dog_in_flowers2, R.drawable.clouds, R.drawable.mountains_and_water2)
+            imageResIds = listOf(R.drawable.abstract2, R.drawable.puppy, R.drawable.forest)
+        ),
+        Question(
+            text = "Какое фото вызывает у вас наибольшее чувство спокойствия и умиротворения?",
+            imageResIds = listOf(R.drawable.tiger2, R.drawable.clouds, R.drawable.doggy)
+        ),
+        Question(
+            text = "Какое фото вызывает у вас наибольшее чувство спокойствия и умиротворения?",
+            imageResIds = listOf(R.drawable.cloudy, R.drawable.kitty, R.drawable.abstract3)
         )
     )
 
@@ -64,7 +73,10 @@ class QuestionnaireActivity : AppCompatActivity() {
 
         // Кнопка "Завершить"
         binding.finishButton.setOnClickListener {
-            val intent = Intent(this, MainActivity::class.java)
+            val recommendedTheme = calculateStressTheme()
+            val intent = Intent(this, MainActivity::class.java).apply {
+                putExtra("RECOMMENDED_THEME", recommendedTheme)
+            }
             startActivity(intent)
             finish()
         }
@@ -101,6 +113,8 @@ class QuestionnaireActivity : AppCompatActivity() {
         // Сохраняем выбранную картинку для текущего вопроса
         selectedImageIndices[currentQuestionIndex] = index
 
+        Log.d("OhMYINDEX", "Selected image for question $currentQuestionIndex: $index")
+
         // Сброс выделения всех картинок
         resetImageBorders()
 
@@ -121,6 +135,8 @@ class QuestionnaireActivity : AppCompatActivity() {
             // Если это последний вопрос, показываем кнопку "Завершить"
             binding.finishButton.visibility = View.VISIBLE
         }
+
+
     }
 
     private fun resetImageBorders() {
@@ -134,5 +150,44 @@ class QuestionnaireActivity : AppCompatActivity() {
         binding.backButton.visibility = if (currentQuestionIndex > 0) View.VISIBLE else View.GONE
         binding.nextButton.visibility = if (currentQuestionIndex < questions.size - 1 && selectedImageIndices[currentQuestionIndex] != -1) View.VISIBLE else View.GONE
         binding.finishButton.visibility = if (currentQuestionIndex == questions.size - 1 && selectedImageIndices[currentQuestionIndex] != -1) View.VISIBLE else View.GONE
+    }
+
+    private val themeVotes = mutableMapOf<StressTheme, Int>().apply {
+        StressTheme.values().forEach { put(it, 0) }
+    }
+
+    private fun calculateStressTheme(): StressTheme {
+        // Создаем карту для подсчета голосов по категориям
+        val categoryVotes = mutableMapOf<Int, Int>().apply {
+            for (i in 1..5) put(i, 0) // Предполагаем, что у нас 5 категорий
+        }
+
+        // Определяем соответствие индексов изображений и категорий
+        val imageToCategoryMapping = listOf(
+            listOf(5, 1, 2), // Вопрос 1
+            listOf(4, 3, 5), // Вопрос 2
+            listOf(1, 4, 3), // Вопрос 3
+            listOf(3, 2, 4), // Вопрос 4
+            listOf(2, 5, 1)  // Вопрос 5
+        )
+
+        questions.forEachIndexed { questionIndex, _ ->
+            val selectedImageIndex = selectedImageIndices[questionIndex]
+            if (selectedImageIndex != -1) {
+                val category = imageToCategoryMapping[questionIndex][selectedImageIndex]
+                categoryVotes[category] = categoryVotes[category]!! + 1
+            }
+        }
+
+        // Получаем наиболее популярную категорию
+        val mostPopularCategory = categoryVotes.maxByOrNull { it.value }?.key ?: -1
+
+        // Преобразуем уровень в StressTheme
+        return if (mostPopularCategory != -1) {
+            StressTheme.fromLevel(mostPopularCategory)
+        } else {
+            StressTheme.CATS // Возвращаем значение по умолчанию или обработайте случай отсутствия голосов
+        }
+
     }
 }

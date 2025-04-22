@@ -2,6 +2,7 @@ package com.example.calmdown
 
 import android.os.Bundle
 import android.util.Log
+import android.widget.SeekBar
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.lifecycle.lifecycleScope
@@ -25,94 +26,88 @@ class MainActivity : ComponentActivity() {
     private val perPage = 20
     private var isLoading = false
     private var isLastPage = false
-    private var lastQuery: String = ""
+    private var currentStressLevel: Int = 3 // Средний уровень по умолчанию
 
+    private lateinit var binding: MainLayoutBinding
     private lateinit var adapter: PhotosAdapter
     private val photos = mutableListOf<Photo>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        val binding = MainLayoutBinding.inflate(layoutInflater)
+        binding = MainLayoutBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // Инициализация адаптера
         adapter = PhotosAdapter(photos)
         binding.recyclerView.layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
         binding.recyclerView.adapter = adapter
 
-        // Обработка нажатия кнопки "Найти"
-        binding.button.setOnClickListener {
-            resetPagination() // Сбрасываем пагинацию и очищаем список
-            loadMorePhotos(binding) // Загружаем данные по новому запросу
-        }
+        // Настройка SeekBar
+        setupSeekBar()
 
-        binding.recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                super.onScrolled(recyclerView, dx, dy)
-
-                val layoutManager = recyclerView.layoutManager as StaggeredGridLayoutManager
-                val visibleItemCount = layoutManager.childCount
-                val totalItemCount = layoutManager.itemCount
-                val firstVisibleItemPositions = layoutManager.findFirstVisibleItemPositions(null)
-                val firstVisibleItemPosition = firstVisibleItemPositions[0]
-
-                // Если пользователь доскроллил до конца и загрузка не идет
-                if (!isLoading && !isLastPage) {
-                    if (visibleItemCount + firstVisibleItemPosition >= totalItemCount
-                        && firstVisibleItemPosition >= 0) {
-                        loadMorePhotos(binding) // Загружаем следующую порцию
-                    }
-                }
-            }
-        })
-
-        // Загружаем первую порцию изображений
-        loadMorePhotos(binding)
+        // Загрузка первых фото
+        loadMorePhotos()
     }
 
-    // Метод для загрузки порции изображений
-    private fun loadMorePhotos(binding: MainLayoutBinding) {
+    private fun setupSeekBar() {
+        binding.stressSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
+                currentStressLevel = progress + 1
+                updateThemePreview(progress)
+
+                // При изменении уровня стресса сбрасываем пагинацию и загружаем новые фото
+                resetPagination()
+                loadMorePhotos()
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar) {}
+        })
+    }
+
+    private fun updateThemePreview(level: Int) {
+        val theme = StressTheme.values().first { it.level == level + 1 }
+        //binding.themePreview.setImageResource(theme.drawableRes)
+
+        binding.currentLevelText.text = when (level) {
+            0 -> "Очень низкий"
+            1 -> "Низкий"
+            2 -> "Средний"
+            3 -> "Высокий"
+            4 -> "Очень высокий"
+            else -> ""
+        }
+    }
+
+    private fun loadMorePhotos() {
         if (isLoading || isLastPage) return
 
         isLoading = true
         lifecycleScope.launch {
             try {
-                val user_query: String = binding.editTextText.text.toString()
+                val theme = StressTheme.fromLevel(currentStressLevel)
+                val newPhotos = fetchPhotos(theme.query, currentPage, perPage)
 
-                if (user_query.isEmpty()) {
-                    Toast.makeText(this@MainActivity, "Введите запрос", Toast.LENGTH_SHORT).show()
-                    return@launch
-                }
-
-                // Если запрос изменился, сбрасываем пагинацию
-                if (user_query != lastQuery) {
-                    resetPagination()
-                    lastQuery = user_query
-                }
-
-                val newPhotos = fetchPhotos(user_query, currentPage, perPage)
                 if (newPhotos.isNotEmpty()) {
-                    val startPosition = photos.size
-                    photos.addAll(newPhotos.filterNotNull()) // Добавляем новые фото в список
-                    adapter.updatePhotos(photos) // Обновляем адаптер
-                    currentPage++ // Увеличиваем номер страницы
+                    photos.addAll(newPhotos.filterNotNull())
+                    adapter.updatePhotos(photos)
+                    currentPage++
                 } else {
-                    isLastPage = true // Если новых фото нет, останавливаем загрузку
+                    isLastPage = true
                 }
             } catch (e: Exception) {
-                Log.e("MainActivity", "Error loading more photos: ${e.message}", e)
+                Log.e("MainActivity", "Error loading photos: ${e.message}", e)
             } finally {
                 isLoading = false
-                kotlinx.coroutines.delay(2000)
             }
         }
     }
 
     private fun resetPagination() {
-        currentPage = 1 // Сбрасываем пагинацию
-        isLastPage = false // Сбрасываем флаг последней страницы
-        photos.clear() // Очищаем список фотографий
-        adapter.notifyDataSetChanged() // Уведомляем адаптер об очистке списка
+        currentPage = 1
+        isLastPage = false
+        photos.clear()
+        adapter.notifyDataSetChanged()
     }
 
     private suspend fun fetchPhotos(query: String, page: Int, perPage: Int): List<Photo> {
@@ -122,10 +117,11 @@ class MainActivity : ComponentActivity() {
                     query = query,
                     page = page,
                     perPage = perPage,
-                    "yy9LcujASiUad_qKT5tiK1GHQ96eGxWp3-LeEcxc7PA").results
+                    "yy9LcujASiUad_qKT5tiK1GHQ96eGxWp3-LeEcxc7PA"
+                ).results
             } catch (e: Exception) {
                 Log.e("MainActivity", "Error fetching photos: ${e.message}", e)
-                emptyList() // Возвращаем пустой список в случае ошибки
+                emptyList()
             }
         }
     }
