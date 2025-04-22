@@ -70,7 +70,7 @@
             android:id="@+id/currentLevelText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Средний уровень"
+            android:text=""
             android:textSize="18sp"
             android:textColor="@color/black"
             android:gravity="center"

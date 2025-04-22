@@ -26,11 +26,16 @@ class MainActivity : ComponentActivity() {
     private val perPage = 20
     private var isLoading = false
     private var isLastPage = false
-    private var currentStressLevel: Int = 3 // Средний уровень по умолчанию
+    //private var currentStressLevel: Int = 3 // Средний уровень по умолчанию
 
     private lateinit var binding: MainLayoutBinding
     private lateinit var adapter: PhotosAdapter
     private val photos = mutableListOf<Photo>()
+
+    // Хранение голосов по категориям стресса
+    private val categoryVotes = mutableMapOf<StressTheme, Int>().apply {
+        StressTheme.values().forEach { put(it, 0) } // Инициализируем все категории с 0 голосами
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,22 +47,26 @@ class MainActivity : ComponentActivity() {
         binding.recyclerView.layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
         binding.recyclerView.adapter = adapter
 
+        val sortedThemes: List<StressTheme>? = intent.getSerializableExtra("SORTED_THEMES") as? List<StressTheme>
+
         // Настройка SeekBar
-        setupSeekBar()
+        setupSeekBar(sortedThemes)
 
         // Загрузка первых фото
-        loadMorePhotos()
+        sortedThemes?.get(2)?.let { loadMorePhotos(it) }
     }
 
-    private fun setupSeekBar() {
+    private fun setupSeekBar(themes: List<StressTheme>?) {
         binding.stressSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
-                currentStressLevel = progress + 1
-                updateThemePreview(progress)
+                val selectedTheme = themes?.get(progress)
+                binding.currentLevelText.text = selectedTheme?.name // Отображаем текущую тему
 
                 // При изменении уровня стресса сбрасываем пагинацию и загружаем новые фото
                 resetPagination()
-                loadMorePhotos()
+                if (selectedTheme != null) {
+                    loadMorePhotos(selectedTheme) // Передаем выбранную тему
+                }
             }
 
             override fun onStartTrackingTouch(seekBar: SeekBar) {}
@@ -65,27 +74,31 @@ class MainActivity : ComponentActivity() {
         })
     }
 
-    private fun updateThemePreview(level: Int) {
-        val theme = StressTheme.values().first { it.level == level + 1 }
-        //binding.themePreview.setImageResource(theme.drawableRes)
 
-        binding.currentLevelText.text = when (level) {
-            0 -> "Очень низкий"
-            1 -> "Низкий"
-            2 -> "Средний"
-            3 -> "Высокий"
-            4 -> "Очень высокий"
-            else -> ""
-        }
-    }
+//    private fun updateThemePreview(level: Int) {
+//        val theme = StressTheme.values().first { it.level == level + 1 }
+//        //binding.themePreview.setImageResource(theme.drawableRes)
+//
+//        binding.currentLevelText.text = when (level) {
+//            0 -> "Очень низкий"
+//            1 -> "Низкий"
+//            2 -> "Средний"
+//            3 -> "Высокий"
+//            4 -> "Очень высокий"
+//            else -> ""
+//        }
+//    }
 
-    private fun loadMorePhotos() {
+    private fun loadMorePhotos(theme: StressTheme) {
         if (isLoading || isLastPage) return
 
         isLoading = true
         lifecycleScope.launch {
             try {
-                val theme = StressTheme.fromLevel(currentStressLevel)
+//                // Получаем отсортированные темы на основе голосов и выбираем первую (наиболее популярную)
+//                val sortedThemes = StressTheme.getSortedThemes(categoryVotes)
+//                val theme = sortedThemes.firstOrNull() ?: StressTheme.CATS // Значение по умолчанию
+
                 val newPhotos = fetchPhotos(theme.query, currentPage, perPage)
 
                 if (newPhotos.isNotEmpty()) {

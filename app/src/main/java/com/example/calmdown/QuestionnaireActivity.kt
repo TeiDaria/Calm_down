@@ -73,9 +73,11 @@ class QuestionnaireActivity : AppCompatActivity() {
 
         // Кнопка "Завершить"
         binding.finishButton.setOnClickListener {
-            val recommendedTheme = calculateStressTheme()
+            val recommendedTheme = calculateStressTheme(questions)[3]
+            val sortedThemes = ArrayList(calculateStressTheme(questions))
             val intent = Intent(this, MainActivity::class.java).apply {
                 putExtra("RECOMMENDED_THEME", recommendedTheme)
+                putExtra("SORTED_THEMES", sortedThemes)
             }
             startActivity(intent)
             finish()
@@ -152,23 +154,19 @@ class QuestionnaireActivity : AppCompatActivity() {
         binding.finishButton.visibility = if (currentQuestionIndex == questions.size - 1 && selectedImageIndices[currentQuestionIndex] != -1) View.VISIBLE else View.GONE
     }
 
-    private val themeVotes = mutableMapOf<StressTheme, Int>().apply {
-        StressTheme.values().forEach { put(it, 0) }
-    }
-
-    private fun calculateStressTheme(): StressTheme {
+    private fun calculateStressTheme(questions: List<Question>): List<StressTheme> {
         // Создаем карту для подсчета голосов по категориям
-        val categoryVotes = mutableMapOf<Int, Int>().apply {
-            for (i in 1..5) put(i, 0) // Предполагаем, что у нас 5 категорий
+        val categoryVotes = mutableMapOf<StressTheme, Int>().apply {
+            StressTheme.values().forEach { put(it, 0) } // Инициализируем все категории с 0 голосами
         }
 
         // Определяем соответствие индексов изображений и категорий
         val imageToCategoryMapping = listOf(
-            listOf(5, 1, 2), // Вопрос 1
-            listOf(4, 3, 5), // Вопрос 2
-            listOf(1, 4, 3), // Вопрос 3
-            listOf(3, 2, 4), // Вопрос 4
-            listOf(2, 5, 1)  // Вопрос 5
+            listOf(StressTheme.CATS, StressTheme.ABSTRACT, StressTheme.SKY), // Вопрос 1
+            listOf(StressTheme.DOGS, StressTheme.NATURE, StressTheme.CATS), // Вопрос 2
+            listOf(StressTheme.ABSTRACT, StressTheme.DOGS, StressTheme.NATURE), // Вопрос 3
+            listOf(StressTheme.NATURE, StressTheme.SKY, StressTheme.DOGS), // Вопрос 4
+            listOf(StressTheme.SKY, StressTheme.CATS, StressTheme.ABSTRACT)  // Вопрос 5
         )
 
         questions.forEachIndexed { questionIndex, _ ->
@@ -179,15 +177,10 @@ class QuestionnaireActivity : AppCompatActivity() {
             }
         }
 
-        // Получаем наиболее популярную категорию
-        val mostPopularCategory = categoryVotes.maxByOrNull { it.value }?.key ?: -1
+        // Получаем отсортированные категории по количеству голосов
+        val sortedThemes = StressTheme.getSortedThemes(categoryVotes)
 
-        // Преобразуем уровень в StressTheme
-        return if (mostPopularCategory != -1) {
-            StressTheme.fromLevel(mostPopularCategory)
-        } else {
-            StressTheme.CATS // Возвращаем значение по умолчанию или обработайте случай отсутствия голосов
-        }
-
+        return sortedThemes
     }
+
 }

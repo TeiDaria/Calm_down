@@ -1,16 +1,20 @@
 package com.example.calmdown
 
-enum class StressTheme(val level: Int, val query: String) {
+import java.io.Serializable
 
-    ABSTRACT(1, "abstract"),
-    SKY(2, "sky"),
-    NATURE(3, "nature"),
-    DOGS(4, "dogs"),
-    CATS(5, "cats");
+enum class StressTheme(val query: String) : Serializable {
+    ABSTRACT("abstract"),
+    SKY("sky"),
+    NATURE("nature"),
+    DOGS("dogs"),
+    CATS("cats");
 
     companion object {
-        fun fromLevel(level: Int): StressTheme {
-            return values().first { it.level == level }
+        // Метод для получения категорий в порядке убывания голосов
+        fun getSortedThemes(votes: Map<StressTheme, Int>): List<StressTheme> {
+            return votes.toList()
+                .sortedByDescending { it.second } // Сортируем по количеству голосов
+                .map { it.first } // Возвращаем только категории
         }
     }
 }
