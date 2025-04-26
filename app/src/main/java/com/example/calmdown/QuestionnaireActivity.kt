@@ -178,7 +178,7 @@ class QuestionnaireActivity : AppCompatActivity() {
         }
 
         // Получаем отсортированные категории по количеству голосов
-        val sortedThemes = StressTheme.getSortedThemes(categoryVotes)
+        val sortedThemes = StressTheme.getSortedThemes(categoryVotes).reversed()
 
         return sortedThemes
     }
