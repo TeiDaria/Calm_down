@@ -23,7 +23,7 @@ import kotlinx.coroutines.withContext
 class MainActivity : ComponentActivity() {
 
     private var currentPage = 1
-    private val perPage = 20
+    private val perPage = 30
     private var isLoading = false
     private var isLastPage = false
 
@@ -40,6 +40,28 @@ class MainActivity : ComponentActivity() {
         adapter = PhotosAdapter(photos)
         binding.recyclerView.layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
         binding.recyclerView.adapter = adapter
+
+        binding.recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+
+                val layoutManager = recyclerView.layoutManager as StaggeredGridLayoutManager
+                val visibleItemCount = layoutManager.childCount
+                val totalItemCount = layoutManager.itemCount
+                val firstVisibleItems = IntArray(2)
+                layoutManager.findFirstVisibleItemPositions(firstVisibleItems)
+                val firstVisibleItem = firstVisibleItems.minOrNull() ?: 0
+
+                if (!isLoading && !isLastPage) {
+                    if ((visibleItemCount + firstVisibleItem) >= totalItemCount && firstVisibleItem >= 0) {
+                        // Пользователь долистал до конца - загружаем новые фото
+                        val selectedTheme = getCurrentTheme() // Нужно реализовать этот метод
+                        selectedTheme?.let { loadMorePhotos(it) }
+                    }
+                }
+            }
+        })
+
 
         val sortedThemes: List<StressTheme>? = intent.getSerializableExtra("SORTED_THEMES") as? List<StressTheme>
 
@@ -68,6 +90,12 @@ class MainActivity : ComponentActivity() {
         })
     }
 
+    private fun getCurrentTheme(): StressTheme? {
+        val progress = binding.stressSeekBar.progress
+        val sortedThemes = intent.getSerializableExtra("SORTED_THEMES") as? List<StressTheme>
+        return sortedThemes?.get(progress)
+    }
+
 
 //    private fun updateThemePreview(level: Int) {
 //        val theme = StressTheme.values().first { it.level == level + 1 }
@@ -87,6 +115,8 @@ class MainActivity : ComponentActivity() {
         if (isLoading || isLastPage) return
 
         isLoading = true
+        binding.progressBar.visibility = android.view.View.VISIBLE // Показываем ProgressBar
+
         lifecycleScope.launch {
             try {
                 val newPhotos = fetchPhotos(theme.query, currentPage, perPage)
@@ -102,6 +132,7 @@ class MainActivity : ComponentActivity() {
                 Log.e("MainActivity", "Error loading photos: ${e.message}", e)
             } finally {
                 isLoading = false
+                binding.progressBar.visibility = android.view.View.GONE // Скрываем ProgressBar
             }
         }
     }
