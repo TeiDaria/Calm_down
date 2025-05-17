@@ -1,4 +1,4 @@
-package com.example.calmdown
+package com.example.calmdown.model.data
 
 data class SearchResponse(
     val total: Int,

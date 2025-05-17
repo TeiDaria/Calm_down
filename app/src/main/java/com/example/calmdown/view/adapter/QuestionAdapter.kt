@@ -1,14 +1,14 @@
-package com.example.calmdown
+package com.example.calmdown.view.adapter
 
 import android.content.Context
-import android.content.Context.MODE_PRIVATE
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
+import com.example.calmdown.R
+import com.example.calmdown.model.data.Question
 
 class QuestionAdapter(private val questions: List<Question>, private val context: Context) : RecyclerView.Adapter<QuestionAdapter.QuestionViewHolder>() {
 

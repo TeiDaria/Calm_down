@@ -1,9 +1,11 @@
-package com.example.calmdown
+package com.example.calmdown.view.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.example.calmdown.R
+import com.example.calmdown.model.data.Photo
 import com.example.calmdown.databinding.ItemPhotoBinding
 
 class PhotosAdapter(private var photos: List<Photo?>) : RecyclerView.Adapter<PhotosAdapter.PhotoViewHolder>() {

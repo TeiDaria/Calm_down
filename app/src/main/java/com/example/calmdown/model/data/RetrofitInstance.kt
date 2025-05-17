@@ -1,5 +1,6 @@
-package com.example.calmdown
+package com.example.calmdown.model.data
 
+import com.example.calmdown.model.api.UnsplashApi
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 

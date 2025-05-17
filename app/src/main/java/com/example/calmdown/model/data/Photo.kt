@@ -1,4 +1,4 @@
-package com.example.calmdown
+package com.example.calmdown.model.data
 
 data class Photo(
     val id: String,

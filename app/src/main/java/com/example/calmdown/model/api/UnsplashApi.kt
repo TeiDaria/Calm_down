@@ -1,5 +1,6 @@
-package com.example.calmdown
+package com.example.calmdown.model.api
 
+import com.example.calmdown.model.data.SearchResponse
 import retrofit2.http.GET
 import retrofit2.http.Query
 

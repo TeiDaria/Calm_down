@@ -1,4 +1,4 @@
-package com.example.calmdown
+package com.example.calmdown.model.data
 
 data class Question(
     val text: String, // Текст вопроса
