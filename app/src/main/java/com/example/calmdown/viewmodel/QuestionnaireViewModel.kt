@@ -2,13 +2,11 @@
 package com.example.calmdown.viewmodel
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.example.calmdown.R
 import com.example.calmdown.model.data.Question
 import com.example.calmdown.model.enums.StressTheme
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
 
 class QuestionnaireViewModel : ViewModel() {
 
